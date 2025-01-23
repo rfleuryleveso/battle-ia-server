@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package battle_c;
+
+message Vector2 {
+  int32 x = 1;
+  int32 y = 2;
+}
+
+message Vector3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message PlayerData {
+  int32 id = 1;
+  optional Vector3 position = 2;
+  optional Vector3 speed = 3;
+  int32 health = 4;
+  int32 armor = 5;
+  int32 score = 6;
+  bool alive = 7;
+}
+
+enum RadarReturnType {
+  PLAYER = 0;
+  WALL = 1;
+  BOOST = 2;
+}
+
+message RadarReturn {
+  int32 id = 1;
+  Vector3 position = 2;
+  Vector3 speed = 3;
+  RadarReturnType return_type = 4;
+}
+
+message Shoot {
+  optional uint64 target_id = 1; // Only when Worldoption auto_shoot_allowed is true
+  optional float angle = 2;
+}
+message ClientInit {
+  bool is_spectator = 1;
+}
+
+message ClientServerMessage {
+  optional int32 message_id = 1;
+  oneof body {
+    Vector3 set_speed = 2;
+    Vector3 limit_distance = 3;
+    int32 radar_ping = 4;
+    bool get_world_info = 5;
+    ClientInit client_init = 6;
+    Shoot shoot = 7;
+  }
+}
+
+message WorldOptions {
+  int32 map_x = 1;
+  int32 map_y = 2;
+
+  bool grid_based = 3;
+  float grid_resolution = 4;
+
+  int32 max_players = 5;
+  bool auto_shoot_allowed = 6;
+  bool radar_enabled = 7;
+}
+
+
+message RadarResult {
+  repeated RadarReturn radar_return = 1;
+}
+
+message PlayersSighted {
+  repeated PlayerData players = 2;
+}
+
+message ShootResult {
+  bool success = 1;
+  optional uint64 target_id = 2;
+  optional uint64 damage_points = 3;
+  optional bool target_destroyed = 4;
+}
+
+enum GameEndedReason {
+  KILLED = 0;
+  GAME_STOPPED = 1;
+}
+
+message GameEnded {
+  optional GameEndedReason reason = 1;
+}
+message GameStarted {
+
+}
+
+message ServerClientMessage {
+  optional int32 message_id = 1;
+  oneof body {
+    string error = 2; // In case an error happened
+    WorldOptions world_options = 3;
+    PlayerData player_data = 4; // Position updated
+    PlayersSighted players_sighted = 5; // When players are in visual range 
+    RadarResult radar_result = 6; // BVR radar ping
+    ShootResult shoot_result = 7;
+    GameEnded game_ended = 8;
+    GameStarted game_started = 9;
+  }
+}
