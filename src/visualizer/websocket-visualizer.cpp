@@ -51,10 +51,13 @@ void WebSocketVisualizer::RunServer() {
     // Launch a separate thread for broadcasting world state
     std::thread broadcaster([this]() {
       while (running_) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         json::json world_state = {{"type", "world"}};
 
         for (const auto &obj : world_->GetWorldObjects()) {
+          if (obj->IsDestroyed()) {
+            continue;
+          }
           json::json object_data = {{"position",
                                      {{"x", obj->GetPosition().GetX()},
                                       {"y", obj->GetPosition().GetY()}}},

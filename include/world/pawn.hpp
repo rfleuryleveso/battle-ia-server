@@ -17,7 +17,7 @@ private:
    * Last time the pawn shot
    */
   std::chrono::time_point<std::chrono::steady_clock> last_shoot =
-      std::chrono::steady_clock::now();
+      std::chrono::steady_clock::time_point::min();
 
 public:
   Pawn() {}

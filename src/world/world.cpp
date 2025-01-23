@@ -1,6 +1,7 @@
 #include "world/world.hpp"
 #include "constants.hpp"
 #include "world/boost.hpp"
+#include "world/pawn.hpp"
 #include "world/vector3.hpp"
 #include "world/wall.hpp"
 #include "world/world_object.hpp"
@@ -41,8 +42,11 @@ void World::Stop() {
 void World::Process() {
   using namespace std::chrono;
 
+  const int target_fps = 60;
+  const double delta_time = (double)1 / (double)target_fps;
+  ;
   // Define the time per frame for 60 FPS
-  const milliseconds frameDuration(16);
+  const milliseconds frameDuration(1000 / target_fps);
 
   auto lastTime = steady_clock::now();
 
@@ -60,23 +64,25 @@ void World::Process() {
           if (world_object->IsDestroyed()) {
             continue;
           }
-          world_object->Tick();
+          try {
+            world_object->Tick();
+          } catch (std::exception e) {
+            spdlog::error("Could not tick {} {}", world_object->GetId(),
+                          e.what());
+          }
           Vector3 &position = world_object->GetPosition();
           Vector3 &speed = world_object->GetSpeed();
-          Vector3 new_position(position.GetX() + speed.GetX(),
-                               position.GetY() + speed.GetY(),
-                               position.GetZ() + speed.GetZ());
-
+          Vector3 new_position(position.GetX() + speed.GetX() * delta_time,
+                               position.GetY() + speed.GetY() * delta_time,
+                               position.GetZ() + speed.GetZ() * delta_time);
           // OOB Check
           if (new_position.GetX() > this->world_settings_.sizeX_ ||
               new_position.GetX() < 0 ||
               new_position.GetY() > this->world_settings_.sizeY_ ||
               new_position.GetY() < 0) {
-            if (speed.GetX() < EPSILON) {
+            if (speed.GetX() > EPSILON) {
               speed.SetX(0);
               speed.SetY(0);
-              spdlog::warn("Object ID: {} out of bounds. Speed set to 0.",
-                           world_object->GetId());
             }
             continue;
           }

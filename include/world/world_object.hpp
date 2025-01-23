@@ -18,7 +18,7 @@ class WorldObject {
 
   uint64_t radius_ = 1;
 
-  bool destroyed_;
+  bool destroyed_ = false;
 
 public:
   WorldObject();

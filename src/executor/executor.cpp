@@ -204,6 +204,7 @@ void Executor::HandleShoot(const std::shared_ptr<Peer> &peer,
   if (!pawn->RegisterShoot()) {
     spdlog::warn("Shot denied for pawn ID {}", pawn->GetId());
     shoot_result_message->set_success(false);
+    shoot_result_message->set_fail_reason(ShootFailReason::COOLDOWN);
     goto send_response;
   }
 
@@ -282,6 +283,7 @@ void Executor::HandleShoot(const std::shared_ptr<Peer> &peer,
       this->visualizer_->DrawShoot(pawn->GetPosition(), target->GetPosition());
     } else {
       shoot_result_message->set_success(false); // No target hit
+      shoot_result_message->set_fail_reason(ShootFailReason::MISS);
     }
   }
 
